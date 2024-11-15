@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<title>{{.Title}}</title>
+<head>
+  <style>
+    input{
+      border-radius: 4px;
+    }
+    .hden{
+      display: none;
+    }
+    .elemDetails{
+      top: calc(50% - 300px);
+      left : calc(50% - 200px);
+      width: 400px;
+      height: 500px;
+      bodrer-style: solid;
+      position: fixed;
+      background-color: #f8f7f2;
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .cntr{
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 1024px;
+      text-align: center;
+    }
+    .inputWidth{
+      width: 90%;
+    }
+    .hovDiv{
+      
+    }
+    .hovDiv:hover{
+      background: #d5e6a2;
+    }
+    table {
+      width: 100%;
+    }
+    td:nth-child(1){
+      width: 8%;
+    }
+    td:nth-child(2){
+      width: 25%;
+    }
+    td:nth-child(3){
+      width: 25%;
+    }
+    td:nth-child(4){
+      width: 22%;
+    }
+    td:nth-child(5){
+      width: 20%;
+    }
+  </style>
+</head>
+<body>
+
+<h1 class="cntr">Тестовое задание EffectiveMobile "Медиа библиотека"</h1>
+  <div class="cntr">
+    <form name="filter" action="javascript:getListElem()">
+      <table>
+        <tr>
+          <td><input type="text" id="idFilter" class="inputWidth" placeholder="По номеру"></td>
+          <td><input type="text" id="songFilter" class="inputWidth" placeholder="Фильтровать по названию песни"></td>
+          <td><input type="text" id="groupFilter" class="inputWidth" placeholder="По названию группы"></td>
+          <td><input type="date" id="dateStartFilter" placeholder="C даты"> - 
+              <input type="date" id="dateEndFilter" placeholder="По дату">
+          <td><input type="text" id="linkFilter" class="inputWidth" placeholder="По ссылке">
+              <input type="submit" class="hden"></td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align: right;">
+            На листе:
+            <select id="limit" onchange="javascript:getListElem()">
+              <option value=5>5</option>
+              <option value=10>10</option>
+              <option value=20>20</option>
+            </select>
+          </td>
+          <td id="pagination" colspan="2" style="text-align: left;">
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  <div class="cntr">
+    <table id="mediaTable">
+    </table>
+  </div>
+  <div class="elemDetails" id="elementDetails" style="visibility: hidden;">
+    Информация о песне
+    <form name="update">
+      <p>Id <input type="text" id="id" size="10"></p>
+      <p>Название <input type="text" id="song" size="40"></p>
+      <p>Группа <input type="text" id="group" size="40"></p>
+      <p>Дата релиза <input type="text" id="releasedate" size="40"></p>
+      <p>Ссылка <input type="text" id="link" size="40"></p>
+      <p>Пагинация</p>
+      <p><textarea type="textarea" id="text" rows="12" cols="53" style="resize: none;"></textarea></p>
+      <p><input type="button" id="cancel" onClick="javascript:closeElemDetails()" value="Отмена">
+         <input type="button" id="patch" value="Изменить">
+         <input type="button" id="delete" value="Удалить"></p>
+    </form>
+  </div>
+  <div class="cntr">
+  <p>
+  <form name="newElem">
+    Добавить новую <input type="text" id="newsong" size="40" placeholder="Название">
+    <input type="text" id="newgroup" size="40" placeholder="Группа">
+    <input type="button" id="addnew" onClick="javascript:addElem()" value="Добавить">
+  </form>
+  </p>
+  </div>
+</body>
+<script>
+
+  function getParamFilter(hostUrl, offset = 0){ 
+    var form = document.forms.filter;
+    var url = new URL(hostUrl);
+    
+    if (form.idFilter.value != "") {
+      url.searchParams.set("id", form.idFilter.value)
+    }
+    if (form.songFilter.value != "") {
+      url.searchParams.set("song", form.songFilter.value + "%")
+    }
+    if (form.groupFilter.value != "") {
+      url.searchParams.set("group", form.groupFilter.value + "%")
+    }
+    if (form.dateStartFilter.value != "") {
+      url.searchParams.set("datastart", form.dateStartFilter.value)
+    }
+    if (form.dateEndFilter.value != "") {
+      url.searchParams.set("dataend", form.dateEndFilter.value)
+    }
+    if (form.linkFilter.value != "") {
+      url.searchParams.set("link", form.linkFilter.value + "%")
+    }
+    url.searchParams.set("limit", +form.limit.value)
+    if (offset >= 1){
+      offset = (offset-1) * form.limit.value;
+      url.searchParams.set("offset", +offset);
+    }
+    
+    return url;
+  }
+      
+  function getListElem(offset = 0){
+    var url = getParamFilter("http://localhost:8080/items", offset);
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("get", url, true);
+    xhr.send();
+    //xhr.setRequestHeader("Content-Type", "application/json");  
+    xhr.onload = function() {
+      if (xhr.status == 200) { 
+        data = xhr.response;
+        showMediaList(data)
+        }
+      }
+  }
+  
+  function showMediaList(data){
+    var result = "";
+    var numOfPages = data.NumOfPages;
+    for (var i = 1; i <= numOfPages; i++){
+      result += "<a href=\"javascript:getListElem(" + i + ")\">[ " + i + " ]</a>";
+    }
+    document.getElementById("pagination").innerHTML = result;
+    
+    result = "";
+    for (var i in data.Items) {
+      result += "<tr class=\"hovDiv\">";
+      result += "<td onclick=\"javascript:showElemDiv(" + data.Items[i].Id + ")\">" + data.Items[i].Id + "</td>";
+      result += "<td onclick=\"javascript:showElemDiv(" + data.Items[i].Id + ")\">" + data.Items[i].Song + "</td>";
+      result += "<td onclick=\"javascript:showElemDiv(" + data.Items[i].Id + ")\">" + data.Items[i].Group + "</td>";
+      result += "<td onclick=\"javascript:showElemDiv(" + data.Items[i].Id + ")\">" + data.Items[i].ReleaseDate + "</td>";
+      result += "<td>" + data.Items[i].Link + "</td>";
+      result += "</tr>";
+    }
+    document.getElementById("mediaTable").innerHTML = result;
+  }
+  
+  function showElemDiv(i){
+    d = document.getElementById("elementDetails")
+    
+    var url = "http://localhost:8080/items/"+i;
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("get", url, true);
+    xhr.send();
+    //xhr.setRequestHeader("Content-Type", "application/json");  
+    xhr.onload = function() {
+      if (xhr.status == 200) { 
+        data = xhr.response;
+        document.getElementById("id").value = data.Id;
+        document.getElementById("song").value = data.Song;
+        document.getElementById("group").value = data.Group;
+        document.getElementById("releasedate").value = data.ReleaseDate;
+        document.getElementById("link").value = data.Link;
+        document.getElementById("text").value = data.Text;
+        document.getElementById("patch").setAttribute('onclick', 'patchElem(data.Id)')
+        document.getElementById("delete").setAttribute('onclick', 'deleteElem(data.Id)')
+        }
+      }
+    d.style.visibility = "visible";
+  }
+  
+  function closeElemDetails(){
+    d = document.getElementById("elementDetails")
+    d.style.visibility = "hidden";
+  }
+  
+  function addElem(){
+    var song, group;
+    var form = document.forms.newElem;
+    if ( form.newsong.value.trim() == "" || form.newgroup.value.trim() == "") {
+      alert("Недостаточно параметров");
+      return; 
+    }
+    song = form.newsong.value;
+    group = form.newgroup.value;
+    
+    var url = new URL("http://localhost:8080/info");
+    url.searchParams.set("song", song);
+    url.searchParams.set("group", group);
+    
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("GET", url, true);
+    xhr.send(); 
+    xhr.onload = function() {
+      if (xhr.status == 500) { 
+          var newsong = {
+            group,
+            song
+          }
+          newsong.song = song;
+          newsong.group = group;
+          var u = new URL("http://localhost:8080/items");
+          var r = new XMLHttpRequest();
+          r.open("PUT", u, true);
+          r.setRequestHeader("Content-Type", "application/json");
+          r.responseType = "json";
+          r.send(JSON.stringify(newsong)); 
+          r.onload = function() {
+            if (r.status == 200) { 
+              //d = r.response;
+              getListElem();
+            }
+          }
+        } else if (xhr.status == 200) {
+          data = xhr.response;
+          alert("Такая песня уже содержится в базе " + data.ReleaseDate + data.Link)
+        }
+      }
+  }
+  
+  function deleteElem(id){
+    d = document.getElementById("elementDetails");
+    var url = "http://localhost:8080/items/"+id;
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("DELETE", url, true);
+    xhr.send();
+    xhr.onload = function() {
+      if (xhr.status == 200) { 
+        data = xhr.response;
+        d.style.visibility = "hidden";
+        getListElem();
+        }
+      }
+  }
+  
+  function patchElem(id){
+    var form = document.forms.update;
+    var jsonRequest = {}
+    if (form.song.value.trim() != "") jsonRequest.song = form.song.value.trim();
+    if (form.group.value.trim() != "") jsonRequest.group = form.group.value.trim();
+    if (form.releasedate.value.trim() != "") jsonRequest.releasedate = form.releasedate.value.trim();
+    if (form.link.value.trim() != "") jsonRequest.link = form.link.value.trim();
+    if (form.text.value != "") jsonRequest.text = form.text.value;
+    
+    var url = "http://localhost:8080/items/"+id;
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "json";
+    xhr.open("PATCH", url, true);
+    xhr.send(JSON.stringify(jsonRequest));
+    xhr.onload = function() {
+      if (xhr.status == 200) { 
+        data = xhr.response;
+        d.style.visibility = "hidden";
+        getListElem();
+        }
+      }
+    
+  }
+  
+  getListElem();
+</script>
+</html> 

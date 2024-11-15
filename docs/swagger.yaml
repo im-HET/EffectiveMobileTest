@@ -1,0 +1,16 @@
+basePath: /v2
+host: http://localhost:8080
+info:
+  contact:
+    email: gmsviridov@gmail.com
+    name: API Support
+    url: t.me/@Gmsviridov
+  description: Тестовое задание в EffectiveMobile "Медиа библиотека"
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Тестовое задание "Медиа библиотека"
+  version: "2"
+paths: {}
+swagger: "2.0"

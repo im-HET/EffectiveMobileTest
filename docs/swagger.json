@@ -1,0 +1,21 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Тестовое задание в EffectiveMobile \"Медиа библиотека\"",
+        "title": "Тестовое задание \"Медиа библиотека\"",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "t.me/@Gmsviridov",
+            "email": "gmsviridov@gmail.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "2"
+    },
+    "host": "http://localhost:8080",
+    "basePath": "/v2",
+    "paths": {}
+}
